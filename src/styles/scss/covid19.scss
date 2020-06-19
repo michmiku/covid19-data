@@ -1,29 +1,25 @@
 .main-container {
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - 49px);
     background-color: #d6d6d6;
     text-align: center;
     color: 'white';
     overflow: hidden;
-    min-height: 660px;
+    min-height: 850px;
 
     .country-container {
 
         height: 550px;
-        width: 48%;
+        width: 90%;
         margin-left: 50px;
 
     }
 
     .data-columns {
         left: 50px;
-        top: 60px
+        width: 200px;
     }
 
-    .countryList {
-        position: relative;
-        top: 80px;
-    }
 
     .chart-col {
         position: relative;
@@ -31,7 +27,9 @@
 
         .chart-container {
             position: relative;
-            left: 12%;
+            right: 38%;
+            margin-top: 5%;
+            top: -40px
         }
     }
 
@@ -45,34 +43,56 @@
     }
 
     .chart {
-        width: 720px;
+        width: 600px;
         height: 100%;
         color: #5a5a5a;
-        background-color: #e5e5e5;
-        border-radius: 10px;
+        background-color: rgb(242, 242, 242);
         -webkit-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.137);
         -moz-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.137);
         -ms-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.137);
         -o-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.137);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.137);
+
+        tspan {
+            font-size: 12px !important;
+        }
     }
 
-    .countryTable {
-        margin: 0 30px;
-        height: 400px;
-    }
+
 
     .first-row {
-        height: 70%
+        height: calc(70% - 49px)
     }
 
     .second-row {
-        height: 30%
-    }
-}
+        height: 100%;
 
-@media only screen and (max-width: 1000px) {
-    .scrollspy-button {
-        visibility: hidden;
+        .countryTable {
+            margin-top: 50px;
+            height: 30%;
+            overflow: auto;
+
+        }
+    }
+
+    .ascending {
+        background-color: rgb(242, 242, 242) !important
+    }
+
+    .descending {
+        background-color: rgb(242, 242, 242) !important
+    }
+
+    th:hover {
+        background-color: rgb(242, 242, 242) !important
+    }
+
+    .map-container {
+        width: 200px;
+        margin-top: 50px;
+        margin-left: 40px;
+        text-align: center;
+        justify-content: center;
+
     }
 }

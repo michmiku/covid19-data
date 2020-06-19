@@ -3,7 +3,7 @@ import '../../styles/css/covid19.css'
 import Cases from "./Cases";
 import CountryList from "./CountryList"
 import CountryTable from "./CountryTable"
-
+import Map from "./Map"
 import Chart from "./Chart";
 import axios from 'axios'
 
@@ -16,18 +16,19 @@ interface Props {
     setCountry: React.Dispatch<React.SetStateAction<{
         country: string;
         slug: string;
-        flag: string
+        flag: any
     }>>;
     data: any;
     setData: React.Dispatch<any>
 }
 
 const Covid19: React.FC<Props> = ({ }) => {
-    const [country, setCountry] = useState<{ country: string, slug: string, flag: string }>({ country: "World", slug: 'world', flag: '' })
+    const [country, setCountry] = useState<{ country: string, slug: string, flag: any }>({ country: "World", slug: 'world', flag: undefined })
     const [data, setData] = useState<any>()
     const [chartSize, setChartSize] = useState({ width: 700, height: 400 })
-    const [usaData, setUsaData] = useState<[]>([])
-
+    const [worldData, setWorldData] = useState<any>()
+    const [allData, setAllData] = useState([])
+    const [currentCord, setCurrentCord] = useState({ lat: 50, long: 0 })
     const updateDimensions = () => {
         let update_width = window.innerWidth / 2.8;
         setChartSize({ width: update_width, height: 660 / 2.4 });
@@ -39,9 +40,10 @@ const Covid19: React.FC<Props> = ({ }) => {
         }
     }
     useEffect(() => {
-        axios.get('https://api.covid19api.com/country/united-states')
+
+        axios.get('https://disease.sh/v2/historical/all?lastdays=all')
             .then(res => {
-                setUsaData(res.data)
+                setWorldData(res.data)
             })
             .catch(err => console.log(err));
         updateDimensions();
@@ -56,27 +58,41 @@ const Covid19: React.FC<Props> = ({ }) => {
                 <div className="col">
                     <div className="row ">
                         <div className="col data-columns">
-                            <Cases country={{ country: "World", slug: 'world' }} setData={setData} usaData={usaData} />
+                            <Cases country={{ country: "World", slug: 'world', flag: undefined }} setData={setData} worldData={worldData} />
                         </div>
+                    </div>
+                    <div className="row ">
                         <div className="col data-columns">
-                            <Cases country={country} setData={setData} usaData={usaData} />
+                            <Cases country={country} setData={setData} worldData={worldData} />
                         </div>
                     </div>
                     <div className="row ">
                         <div className="col countryList">
-                            <CountryList country={country} setCountry={setCountry} />
+                            <CountryList country={country} setCountry={setCountry} setCurrentCord={setCurrentCord} />
 
                         </div>
                     </div>
                 </div>
-                <div className="col-6 chart-col">
-                    <div className="chart-container">
-                        <Chart country={country} data={data} chartSize={chartSize} /></div>
+                <div className="col-6">
+                    <div className="map-container">
+                        <Map chartSize={chartSize} allData={allData} currentCord={currentCord} country={country} setCountry={setCountry} />
+                    </div>
                 </div>
+                <div className="col chart-col">
+                    <div className="row ">
+                        <div className="chart-container">
+                            <Chart country={{ country: "World", slug: 'world' }} data={data} chartSize={chartSize} /></div>
+                    </div>
+                    <div className="row ">
+                        <div className="chart-container">
+                            <Chart country={country} data={data} chartSize={chartSize} /></div>
+                    </div>
+                </div>
+
             </div>
             <div className="row second-row">
                 <div className="col countryTable">
-                    <CountryTable />
+                    <CountryTable setAllData={setAllData} />
                 </div>
             </div>
         </div>

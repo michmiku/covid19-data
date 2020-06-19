@@ -5,93 +5,65 @@ import '../../styles/css/covid19.css'
 
 interface Props {
     country: {
-        country: string;
-        slug: string;
+        country: string,
+        slug: string,
+        flag: any
     };
     setData: React.Dispatch<any>,
-    usaData: any
+    worldData: any,
 }
 
-const Cases: React.FC<Props> = ({ country, setData, usaData }) => {
+const Cases: React.FC<Props> = ({ country, setData, worldData }) => {
     const [topData, setTopData] = useState<{ data: any }>({ data: {} })
     useEffect(() => {
-        if (country.country === "World") {
-            axios.get('https://api.covid19api.com/world/total')
+        if (country.country === "World" && worldData !== undefined) {
+            let cases = Object.keys(worldData.cases)
+            let deaths = Object.keys(worldData.deaths)
+            let recovered = Object.keys(worldData.recovered)
+            let current = worldData.cases[cases[cases.length - 1]] - worldData.deaths[deaths[deaths.length - 1]] - worldData.recovered[recovered[recovered.length - 1]]
+            let yesterdayCurrent = worldData.cases[cases[cases.length - 2]] - worldData.deaths[deaths[deaths.length - 2]] - worldData.recovered[recovered[recovered.length - 2]]
+            let data = {
+                total: worldData.cases[cases[cases.length - 1]],
+                current: current,
+                deaths: worldData.deaths[deaths[deaths.length - 1]],
+                recovered: worldData.recovered[recovered[recovered.length - 1]],
+                newConfirmed: ' (+' + (worldData.cases[cases[cases.length - 1]] - worldData.cases[cases[cases.length - 2]]) + ')',
+                newActive: ' (+' + (current - yesterdayCurrent) + ')',
+                newDeaths: ' (+' + (worldData.deaths[deaths[deaths.length - 1]] - worldData.deaths[deaths[deaths.length - 2]]) + ')',
+                newRecovered: ' (+' + (worldData.recovered[recovered[recovered.length - 1]] - worldData.recovered[recovered[recovered.length - 2]]) + ')',
+            }
+            setTopData({ data })
+            setData(worldData)
+        }
+
+        else if (country.slug !== "world") {
+            axios.get('https://disease.sh/v2/countries/' + country.slug + '?yesterday=false')
                 .then(res => {
+                    let newActive: any = res.data.todayCases - res.data.todayDeaths - res.data.todayRecovered
+                    if (newActive > 0) {
+                        newActive = '+' + newActive
+                    }
                     let data = {
-                        total: res.data.TotalConfirmed,
-                        current: res.data.TotalConfirmed - res.data.TotalDeaths - res.data.TotalRecovered,
-                        deaths: res.data.TotalDeaths,
-                        recovered: res.data.TotalRecovered
+                        total: + res.data.cases,
+                        current: res.data.active,
+                        deaths: res.data.deaths,
+                        recovered: res.data.recovered,
+                        newConfirmed: ' (+' + res.data.todayCases + ')',
+                        newActive: ' (' + newActive + ')',
+                        newDeaths: ' (+' + res.data.todayDeaths + ')',
+                        newRecovered: ' (+' + res.data.todayRecovered + ')',
                     }
                     setTopData({ data })
                 })
                 .catch(err => console.log(err));
-        }
-        else if (country.slug === 'united-states') {
-            if (usaData.length > 1) {
-                var x = 1
-                while (usaData[usaData.length - x].Province !== "") {
-                    x++
-                }
-                var y = x + 1
-                while (usaData[usaData.length - y].Province !== "") {
-                    y++
-                }
-                let newConfirmed = usaData[usaData.length - x].Confirmed - usaData[usaData.length - y].Confirmed
-                let newActive = usaData[usaData.length - x].Active - usaData[usaData.length - y].Active
-                let newDeaths = usaData[usaData.length - x].Deaths - usaData[usaData.length - y].Deaths
-                let newRecovered = usaData[usaData.length - x].Recovered - usaData[usaData.length - y].Recovered
-                let data = {
-                    total: usaData[usaData.length - x].Confirmed + '(+' + newConfirmed + ')',
-                    current: usaData[usaData.length - x].Active + '(+' + newActive + ')',
-                    deaths: usaData[usaData.length - x].Deaths + '(+' + newDeaths + ')',
-                    recovered: usaData[usaData.length - x].Recovered + '(+' + newRecovered + ')',
-                }
-                setTopData({ data })
-                setData(usaData)
-            }
-
-        }
-        else {
-            axios.get('https://api.covid19api.com/country/' + country.slug)
+            axios.get('https://disease.sh/v2/historical/' + country.slug + '?lastdays=all')
                 .then(res => {
-                    if (res.data[0] === undefined) {
-                        let data = {
-                            total: 'No data',
-                            current: 'No data',
-                            deaths: 'No data',
-                            recovered: 'No data'
-                        }
-                        setTopData({ data })
-                    }
-                    else {
-                        var x = 1
 
-                        while (res.data[res.data.length - x].Province !== "") {
-                            x++
-                        }
-                        var y = x + 1
-                        while (res.data[res.data.length - y].Province !== "") {
-                            y++
-                        }
-                        let newConfirmed = res.data[res.data.length - x].Confirmed - res.data[res.data.length - y].Confirmed
-                        let newActive = res.data[res.data.length - x].Active - res.data[res.data.length - y].Active
-                        let newDeaths = res.data[res.data.length - x].Deaths - res.data[res.data.length - y].Deaths
-                        let newRecovered = res.data[res.data.length - x].Recovered - res.data[res.data.length - y].Recovered
-                        let data = {
-                            total: res.data[res.data.length - x].Confirmed + '(+' + newConfirmed + ')',
-                            current: res.data[res.data.length - x].Active + '(+' + newActive + ')',
-                            deaths: res.data[res.data.length - x].Deaths + '(+' + newDeaths + ')',
-                            recovered: res.data[res.data.length - x].Recovered + '(+' + newRecovered + ')',
-                        }
-                        setTopData({ data })
-                    }
-                    setData(res.data)
+                    setData(res.data.timeline)
                 })
                 .catch(err => console.log(err));
         }
-    }, [country])
+    }, [country, worldData])
 
     return (
         <React.Fragment >
@@ -105,19 +77,19 @@ const Cases: React.FC<Props> = ({ country, setData, usaData }) => {
                 <Table.Body >
                     <Table.Row >
                         <Table.Cell >TOTAL CASES</Table.Cell>
-                        <Table.Cell>{topData.data.total}</Table.Cell>
+                        <Table.Cell><b>{topData.data.total}</b>{topData.data.newConfirmed}</Table.Cell>
                     </Table.Row>
                     <Table.Row>
                         <Table.Cell >TOTAL DEATHS</Table.Cell>
-                        <Table.Cell>{topData.data.deaths}</Table.Cell>
+                        <Table.Cell><b>{topData.data.deaths}</b>{topData.data.newDeaths}</Table.Cell>
                     </Table.Row>
                     <Table.Row>
                         <Table.Cell >TOTAL RECOVERED</Table.Cell>
-                        <Table.Cell>{topData.data.recovered}</Table.Cell>
+                        <Table.Cell><b>{topData.data.recovered}</b>{topData.data.newRecovered}</Table.Cell>
                     </Table.Row>
                     <Table.Row>
                         <Table.Cell >ACTIVE CASES</Table.Cell>
-                        <Table.Cell>{topData.data.current}</Table.Cell>
+                        <Table.Cell><b>{topData.data.current}</b>{topData.data.newActive}</Table.Cell>
                     </Table.Row>
                 </Table.Body>
             </Table>
